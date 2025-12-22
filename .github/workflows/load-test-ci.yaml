@@ -69,3 +69,8 @@ jobs:
 
           # Give it a few extra seconds for the webhook to be fully operational
           sleep 10
+
+      - name: Verify if the ingress Class is available
+        run: |
+          #This is to verify that ingress installation is successful and there is an ingressclass
+          kubectl get ingressclass
