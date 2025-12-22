@@ -99,29 +99,30 @@ jobs:
           kubectl get pods
 
           # Temporary delay to allow ingress to sync
+
           echo "Testing foo.localhost..."
-          RESPONSE_FOO=$(curl -s -H "Host: foo.localhost" http://localhost/)
+          RESPONSE_FOO=$(curl -s -H "Host: foo.localhost" http://localhost:8080/)
           echo "Response: '$RESPONSE_FOO'"
 
           if [ "$RESPONSE_FOO" != "foo" ]; then
             echo "❌ Foo service did not respond correctly. Expected 'foo', got '$RESPONSE_FOO'"
             echo ""
             echo "Debug info:"
-            curl -v -H "Host: foo.localhost" http://localhost/
+            curl -v -H "Host: foo.localhost" http://localhost:8080/
             exit 1
           fi
           echo "✅ Foo service responded correctly."
 
           echo ""
           echo "Testing bar.localhost..."
-          RESPONSE_BAR=$(curl -s -H "Host: bar.localhost" http://localhost/)
+          RESPONSE_BAR=$(curl -s -H "Host: bar.localhost" http://localhost:8080/)
           echo "Response: '$RESPONSE_BAR'"
 
           if [ "$RESPONSE_BAR" != "bar" ]; then
             echo "❌ Bar service did not respond correctly. Expected 'bar', got '$RESPONSE_BAR'"
             echo ""
             echo "Debug info:"
-            curl -v -H "Host: bar.localhost" http://localhost/
+            curl -v -H "Host: bar.localhost" http://localhost:8080/
             exit 1
           fi
           echo "✅ Bar service responded correctly."
