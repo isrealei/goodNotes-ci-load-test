@@ -3,9 +3,7 @@ on:
   pull_request:
     branches:
       - main
-  push:
-    branches:
-      - main
+
 permissions:
   contents: read
   pull-requests: write
@@ -138,3 +136,18 @@ jobs:
       - name: Format load test report
         run: |
           python3 scripts/format-report.py
+
+      - name: Post load test results to PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            const body = fs.readFileSync('report.md', 'utf8');
+
+            github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body
+            });
