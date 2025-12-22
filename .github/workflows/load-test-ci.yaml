@@ -130,3 +130,11 @@ jobs:
           echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
           sudo apt-get update
           sudo apt-get install k6
+
+      - name: Run Random load test
+        run: |
+          k6 run --summary-export=summary.json scripts/loadtest.js
+
+      - name: Format load test report
+        run: |
+          python3 scripts/format-report.py
