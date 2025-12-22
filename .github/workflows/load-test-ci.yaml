@@ -1,0 +1,42 @@
+name: CI Load Test
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  load-test:
+    runs-on: ubuntu-latest
+    name: Load test on k8s with Kind
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Install dependencies
+        run: |
+          #Install Kubectl 
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x ./kubectl
+          mkdir -p ~/.local/bin
+          sudo mv ./kubectl ~/.local/bin/kubectl
+
+          #Install Kind
+          # For AMD64 / x86_64
+          [ $(uname -m) = x86_64 ] && curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.31.0/kind-linux-amd64
+          # For ARM64
+          [ $(uname -m) = aarch64 ] && curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.31.0/kind-linux-arm64
+          chmod +x ./kind
+          sudo mv ./kind /usr/local/bin/kind
+
+      - name: Create Kind Cluster
+        run: |
+          kind create cluster --name load-test-cluster --config k8s/kind-config.yaml
+          kubectl cluster-info
+          kubectl get nodes
+          kubectl label node load-test-cluster-control-plane ingress-ready=true
