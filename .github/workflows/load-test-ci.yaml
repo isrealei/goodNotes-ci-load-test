@@ -106,7 +106,7 @@ jobs:
             endpoints/bar \
             --timeout=60s
 
-          # Wait for ingress to sync and route traffic (with retry logic)
+          # Wait for ingress to sync and route traffic (with retry logics)
           echo "Waiting for ingress to serve traffic..."
           for i in {1..10}; do
           RESPONSE_FOO=$(curl -s -H "Host: foo.localhost" http://localhost:8080/ || true)
