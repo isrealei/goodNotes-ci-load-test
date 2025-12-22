@@ -70,7 +70,26 @@ jobs:
           # Give it a few extra seconds for the webhook to be fully operational
           sleep 10
 
-      - name: Verify if the ingress Class is available
+      - name: Verify ingress controller installation
         run: |
-          #This is to verify that ingress installation is successful and there is an ingressclass
-          kubectl get ingressclass
+          # Confirm IngressClass resource exists
+          kubectl get ingressclass nginx -o jsonpath='{.metadata.name}' | grep -q nginx
+          echo "✅ IngressClass 'nginx' is available"
+
+      - name: Deploy workloads
+        run: |
+          kubectl create namespace ci-load-test
+          kubectl config set-context --current --namespace=ci-load-test
+          kubectl apply -f k8s/bar-deployment.yaml -f k8s/foo-deployment.yaml -f k8s/ingress.yaml
+
+      - name: Verify Pods are Running
+        run: |
+          # Wait for deployments to be available
+          kubectl wait --for=condition=available --timeout=120s deployment/foo -n ci-load-test
+          kubectl wait --for=condition=available --timeout=120s deployment/bar -n ci-load-test
+
+          # Display cluster state for debugging
+          echo "📊 Cluster State:"
+          kubectl get pods,svc,ingress,endpoints -n ci-load-test -o wide
+
+          echo "✅ Workloads are ready"
