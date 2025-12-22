@@ -20,13 +20,13 @@ jobs:
 
       - name: Install dependencies
         run: |
-          #Install Kubectl 
+          # Install kubectl
           curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
           chmod +x ./kubectl
           mkdir -p ~/.local/bin
           sudo mv ./kubectl ~/.local/bin/kubectl
 
-          #Install Kind
+          # Install Kind
           # For AMD64 / x86_64
           [ $(uname -m) = x86_64 ] && curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.31.0/kind-linux-amd64
           # For ARM64
@@ -40,3 +40,32 @@ jobs:
           kubectl cluster-info
           kubectl get nodes
           kubectl label node load-test-cluster-control-plane ingress-ready=true
+
+      - name: Install Nginx Ingress Controller
+        run: |
+          kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.1/deploy/static/provider/kind/deploy.yaml
+
+          # Wait for ingress-nginx controller to be ready
+          kubectl wait --namespace ingress-nginx \
+              --for=condition=ready pod \
+              --selector=app.kubernetes.io/component=controller \
+              --timeout=120s
+
+          # Wait for ingress-nginx admission webhook job to complete
+          kubectl wait \
+            --namespace ingress-nginx \
+            --for=condition=complete job \
+            --selector=app.kubernetes.io/component=admission-webhook \
+            --timeout=120s
+
+          # Wait for the webhook service endpoints to be ready
+          echo "Waiting for webhook service to have endpoints..."
+          until kubectl get endpoints -n ingress-nginx ingress-nginx-controller-admission -o jsonpath='{.subsets[*].addresses[*].ip}' | grep -q .; do
+            echo "Webhook endpoints not ready yet, waiting..."
+            sleep 2
+          done
+
+          echo "✅ Webhook service is ready!"
+
+          # Give it a few extra seconds for the webhook to be fully operational
+          sleep 10
