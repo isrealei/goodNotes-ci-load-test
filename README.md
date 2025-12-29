@@ -217,6 +217,5 @@ Workflow triggers automatically on pull requests to `main` branch.
 View the complete CI workflow execution with automated load test results:
 **[Pull Request #1](https://github.com/isrealei/goodNotes-ci-load-test/pull/1)**
 
-**Author**: Isreal Urephu  
-**Assignment**: Goodnotes DevOps Engineer Take-Home Challenge  
+**Author**: Isreal Urephu   
 **Completion Date**: 22nd of December, 2025
